@@ -31,6 +31,7 @@ Bert是高配款的词向量，具有强大的建模学习能力。
 import os
 import numpy
 import pandas as pd
+import matplotlib.pyplot as plt
 ```
 
 
@@ -405,84 +406,112 @@ train.info()
 
 
 ```python
-train.describe()
+train['text_len'] = train['text'].apply(lambda x: len(x.split()))
+train['text_len'].describe()
 ```
 
 
 
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>label</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>count</th>
-      <td>200000.000000</td>
-    </tr>
-    <tr>
-      <th>mean</th>
-      <td>3.210950</td>
-    </tr>
-    <tr>
-      <th>std</th>
-      <td>3.084955</td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>25%</th>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>50%</th>
-      <td>2.000000</td>
-    </tr>
-    <tr>
-      <th>75%</th>
-      <td>5.000000</td>
-    </tr>
-    <tr>
-      <th>max</th>
-      <td>13.000000</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+    count    200000.000000
+    mean        907.207110
+    std         996.029036
+    min           2.000000
+    25%         374.000000
+    50%         676.000000
+    75%        1131.000000
+    max       57921.000000
+    Name: text_len, dtype: float64
 
 
 
-Python join() 方法用于将序列中的元素以指定的字符连接生成一个新的字符串。
-str = '-'
-str.join(sequence)
+## 画直方图
+
+
+```python
+_ = plt.hist(train['text_len'], bins = 200)
+plt.xlabel('text char count')
+plt.ylabel('char number')
+plt.title('histogram of char count')
+```
+
+
+
+
+    Text(0.5,1,'histogram of char count')
+
+
+
+
+![png](output_9_1.png)
+
+
+## 在数据集中标签的对应关系如下：{‘科技’: 0, ‘股票’: 1, ‘体育’: 2, ‘娱乐’: 3, ‘时政’: 4, ‘社会’: 5, ‘教育’: 6, ‘财经’: 7, ‘家居’: 8, ‘游戏’: 9, ‘房产’: 10, ‘时尚’: 11, ‘彩票’: 12, ‘星座’: 13}
+
+
+```python
+train['label'].value_counts().plot(kind='bar')
+plt.xlabel('category')
+plt.title('news class count')
+```
+
+
+
+
+    Text(0.5,1,'news class count')
+
+
+
+
+![png](output_11_1.png)
+
+
+## 字符统计
+接下来可以统计每个字符出现的次数，首先可以将训练集中所有的句子进行拼接进而划分为字符，并统计每个字符的个数。
+从统计结果中可以看出，在训练集中总共包括44374个字，其中编号3750的字出现的次数最多.
+
+
+```python
+from collections import Counter #计数器
+all_lines = ' '.join(list(train['text']))
+word_count = Counter(all_lines.split())
+word_count = sorted(word_count.items(), key = lambda x:int(x[1]), reverse = True)
+print(len(word_count))
+print(word_count[0])
+print(word_count[1])
+print(word_count[2])
+```
+
+    6869
+    ('3750', 7482224)
+    ('648', 4924890)
+    ('900', 3262544)
 
 
 
 ```python
-train
+train['text_unique'] = train['text'].apply(lambda x:' '.join(list(set(x.split()))))
+all_lines_2 = ' '.join(list(train['text_unique']))
+word_count_frequence = Counter(all_lines_2.split())
+word_count_frequence = sorted(word_count_frequence.items(), key = lambda d:int(d[1]), reverse = True)
+print(word_count_frequence[0])
+print(word_count_frequence[1])
+print(word_count_frequence[2])
+####参考资料是骗子 根本就不能出现99%这种频率 需要再处理一下
+##？？？？？？但是 这个貌似字典的玩意 怎么把值取出来算频率呢？？？？？？？？
 ```
 
+    ('3750', 197997)
+    ('900', 197653)
+    ('648', 191975)
 
-```python
-import matplotlib.pyplot as plt
-_ = plt.hist(train[])
-```
+
+## 总结数据分布 哈哈哈哈哈哈哈哈哈
+
+- 一共两万条新闻，平均每个新闻907个字，最少的2个字，最多57921.
+- 科技类新闻最多，快四万了；星座最少（应该的，，这玩意我都不看了，我这狮子座也不像狮子座啊！）
+- 3750 900 648，在20w新闻里出现频率最高，可能是标点符号。
+**底下是牛皮的参考文件写的**
+- 每个新闻平均字符个数较多，可能需要截断；
+- 由于类别不均衡，会严重影响模型的精度；
+
