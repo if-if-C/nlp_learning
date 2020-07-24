@@ -499,6 +499,8 @@ print(word_count_frequence[1])
 print(word_count_frequence[2])
 ####参考资料是骗子 根本就不能出现99%这种频率 需要再处理一下
 ##？？？？？？但是 这个貌似字典的玩意 怎么把值取出来算频率呢？？？？？？？？
+哦会了
+word_count_frequence[2][1]/20000就行
 ```
 
     ('3750', 197997)
